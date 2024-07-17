@@ -38,25 +38,29 @@ class Binding: # There is a lot of important info about a process and address bi
                 self.page_table.append([i, 0])
     
     def address_binding(self, j):
-        if self.vm:
-            if self.page_table[j // self.frame_size][1]:
-                return my_memory[self.seq][self.base+(j % self.frame_size)]
+        if j < self.limit:
+            if self.vm:
+                if self.page_table[j // self.frame_size][1]:
+                    return my_memory[self.seq][self.base+(j % self.frame_size)]
+                else:
+                    num = j // self.frame_size
+                    base = num * self.frame_size
+                    limit = self.frame_size
+                    with open(self.filename, 'rb') as f:
+                        file_data = f.read()
+                        if j >= len(file_data):
+                            raise Exception("Trap")
+                        for i in range(limit):
+                            if base + i < len(file_data):
+                                my_memory[self.seq][self.base + i] = file_data[base + i]
+                    return my_memory[self.seq][self.base+(j % self.frame_size)]
             else:
-                num = j // self.frame_size
-                base = num * self.frame_size
-                limit = self.frame_size
-                with open(self.filename, 'rb') as f:
-                    file_data = f.read()
-                    if j >= len(file_data):
-                        raise Exception("Trap")
-                    for i in range(limit):
-                        if base + i < len(file_data):
-                            my_memory[self.seq][self.base + i] = file_data[base + i]
-                return my_memory[self.seq][self.base+(j % self.frame_size)]
+                if j >= self.limit:
+                    raise Exception("There is a wrong address binding")
+                return my_memory[self.seq][self.base + j]
         else:
-            if j >= self.limit:
-                raise Exception("There is a wrong address binding")
-            return my_memory[self.seq][self.base + j]
+            print("Unauthorized access to memory")
+            sys.exit(1)
     
     def get_name(self):
         return self.filename
@@ -278,7 +282,3 @@ if __name__ == "__main__":
     run()  # read files which in memory
 
 
-with open("h.txt","rb") as f:
-    filee=f.read()
-    print(filee[0])
-print(my_memory[1][0])
