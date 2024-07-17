@@ -267,8 +267,6 @@ def run():
             sys.exit(1)
         if n == 1:
             get_file()
-        else:
-            print("The program finished.")
     else:
         print("There is a problem.")
         print("Please try again.")
@@ -280,5 +278,6 @@ if __name__ == "__main__":
     set_algorithm() #set memory mangment algorithm
     get_file() #get files
     run()  # read files which in memory
+    print("The program finished.")
 
 
