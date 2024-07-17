@@ -40,7 +40,7 @@ class Binding: # There is a lot of important info about a process and address bi
     def address_binding(self, j):
         if self.vm:
             if self.page_table[j // self.frame_size][1]:
-                return my_memory[self.seq][j % self.frame_size]
+                return my_memory[self.seq][self.base+(j % self.frame_size)]
             else:
                 num = j // self.frame_size
                 base = num * self.frame_size
@@ -52,7 +52,7 @@ class Binding: # There is a lot of important info about a process and address bi
                     for i in range(limit):
                         if base + i < len(file_data):
                             my_memory[self.seq][self.base + i] = file_data[base + i]
-                return my_memory[self.seq][j % self.frame_size]
+                return my_memory[self.seq][self.base+(j % self.frame_size)]
         else:
             if j >= self.limit:
                 raise Exception("There is a wrong address binding")
@@ -80,7 +80,7 @@ def get_arr():
         get_arr()
         return
     for i in range(n):
-        print(f'Please input the {i}th space size:')
+        print(f'Please input the {i}th space size(bytes):')
         try:
             x = int(input())
         except ValueError:
@@ -173,13 +173,20 @@ def store(i, name): #store process name to i th seqment of memory
         file_data = f.read()
         for j in range(len(file_data)):
             if free_memory[i].length() > j:
-                my_memory[i][j] = file_data[j]
+                my_memory[i][j+free_memory[i].get_start()] = file_data[j]
 
 def update_free_memory(i, size): #update of free_memmory list this fun is useful after store a process
     if size <= free_memory[i].get_end():
-        free_memory[i].set_start(size)
+        free_memory[i].set_start(free_memory[i].get_start()+size)
     else:
         free_memory[i].set_start(free_memory[i].get_end())
+        
+def show_memory_state():
+    for i in free_memory:
+        if i is not free_memory[-1]:
+            print(i.length(),end=' ,')
+        else:
+            print(i.length())
 
 def get_file(): # get a file frome user an call store fun
     global name_base_limit_reg
@@ -199,6 +206,7 @@ def get_file(): # get a file frome user an call store fun
         name = input()
         try:
             size = os.path.getsize(name)
+            print(f"{name}'s size is {size} bytes")
             flag = is_free()
             if flag: #There are some free space
                 space_index = find_space(size, memory_management_algorithm)
@@ -210,6 +218,9 @@ def get_file(): # get a file frome user an call store fun
                     print(f"Virtual memory is being used for file {name}.")
                 store(space_index, name)
                 update_free_memory(space_index, size)
+                print(f"{name} stored successfully")
+                print("The state of free memory space is as follows:")
+                show_memory_state()
             else: # There is not any free space
                 print("Your memory is full, and you can't move any file to memory.")
                 run()
@@ -266,3 +277,8 @@ if __name__ == "__main__":
     get_file() #get files
     run()  # read files which in memory
 
+
+with open("h.txt","rb") as f:
+    filee=f.read()
+    print(filee[0])
+print(my_memory[1][0])
